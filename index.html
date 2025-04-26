@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>羽毛球积分系统</title>
+    <style>
+        body {
+            background-color: #e6f3ff;
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .title {
+            text-align: center;
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .menu {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: white;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .content-container {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+        }
+
+        .gridx {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex: 1;
+        }
+
+        .student-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
+            position: relative;
+            flex-basis: calc(20.5% - 20px); /* 调整卡片宽度，实现并列展示8张 */
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 10px;
+            border: 2px solid #ddd;
+        }
+
+        .student-name {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .score {
+            font-size: 24px;
+            color: #ff4444;
+            margin: 15px 0;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn-control {
+            font-size: 24px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-minus {
+            background-color: #ff6666;
+            color: white;
+        }
+
+        .btn-plus {
+            background-color: #66cc66;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* 排行榜边栏样式 */
+        .sidebar {
+            width: 600px; /* 增大排行榜弹窗宽度 */
+            right: 0;
+            top: 0;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            height: 100vh;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            position: fixed;
+            transform: translateX(100%);
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(0);
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .sidebar-title {
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background: #f5f5f5;
+        }
+
+        .ranking-item:hover {
+            background: #e9e9e9;
+        }
+
+        .rank {
+            font-weight: bold;
+            width: 30px;
+            text-align: center;
+        }
+
+        .ranking-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 10px;
+        }
+
+        .ranking-name {
+            flex: 1;
+            text-align: left;
+        }
+
+        .ranking-score {
+            color: #ff4444;
+            font-weight: bold;
+        }
+
+        .medal {
+            margin-right: 5px;
+        }
+
+        /* 添加学生头像上传样式 */
+        .avatar-upload {
+            display: none;
+        }
+
+        .avatar-container {
+            position: relative;
+            margin: 0 auto 10px;
+            width: 80px;
+        }
+
+        .change-avatar {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* 输入框样式 */
+        .score-input {
+            width: 100px;
+            padding: 5px;
+            border: 2px solid #ff4444;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #ff6666;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* 积分记录弹窗样式 */
+        .record-modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .record-modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 10px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .record-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .record-list li {
+            margin-bottom: 10px;
+        }
+
+        /* 技术评价样式 */
+        .skill-rating {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .skill-rating label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .skill-rating .stars {
+            color: #ffc107;
+            cursor: pointer;
+        }
+
+        .skill-rating .stars i {
+            margin-right: 2px;
+        }
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+<h1 class="title">🏸 广附实小羽毛球校队积分系统 🏸</h1>
+
+<div class="menu">
+    <button onclick="adjustAll()">全队加分</button>
+    <button onclick="clearAll()">全队清零</button>
+    <button onclick="toggleSidebar()">排行榜</button>
+    <input type="file" id="importFile" style="display: none;" accept=".txt">
+    <button onclick="document.getElementById('importFile').click()">导入积分</button>
+    <button onclick="exportData()">导出积分</button>
+    <button onclick="addStudent()">添加学生</button>
+    <button onclick="showScoreRecords()">积分记录</button>
+</div>
+
+<div class="content-container">
+    <div class="gridx" id="studentGrid"></div>
+</div>
+<!-- 排行榜边栏 -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-title">积分排行榜</div>
+        <button class="toggle-sidebar" onclick="toggleSidebar()">×</button>
+    </div>
+    <div id="rankingList"></div>
+</div>
+
+<!-- 积分记录弹窗 -->
+<div id="recordModal" class="record-modal">
+    <div class="record-modal-content">
+        <span class="close">&times;</span>
+        <h2>积分记录</h2>
+        <ul id="recordList" class="record-list"></ul>
+    </div>
+</div>
+
+<script>
+    let students = [];
+    const defaultAvatar = ''
+    let scoreRecords = [];
+    const skills = ['挑球', '放网', '推球', '接杀防守', '高远球', '吊球', '杀球'];
+
+    // 初始化学生名单
+    const initialStudents = [
+        "林晨", "郭君航", "屈诗颖", "罗章鸣", "杜清漪",
+        "罗正涛", "余靖荣", "宋羽晨", "罗其绅", "袁皓轩",
+        "胡梦涵", "贺云"
+    ];
+
+    // 加载本地存储数据
+    function loadData() {
+        const savedStudents = localStorage.getItem('students');
+        if (savedStudents) {
+            students = JSON.parse(savedStudents);
+            // 确保本地存储的数据包含所有初始学生
+            initialStudents.forEach(studentName => {
+                const existingStudent = students.find(student => student.name === studentName);
+                if (!existingStudent) {
+                    const skillsObj = {};
+                    skills.forEach(skill => skillsObj[skill] = 0);
+                    students.push({
+                        name: studentName,
+                        score: 0,
+                        avatar: defaultAvatar,
+                        skills: skillsObj
+                    });
+                }
+            });
+        } else {
+            students = initialStudents.map(name => {
+                const skillsObj = {};
+                skills.forEach(skill => skillsObj[skill] = 0);
+                return {
+                    name,
+                    score: 0,
+                    avatar: defaultAvatar,
+                    skills: skillsObj
+                };
+            });
+        }
+        const savedRecords = localStorage.getItem('scoreRecords');
+        scoreRecords = savedRecords ? JSON.parse(savedRecords) : [];
+        renderGrid();
+        updateRanking();
+    }
+
+    // 保存数据到本地存储
+    function saveData() {
+        localStorage.setItem('students', JSON.stringify(students));
+        localStorage.setItem('scoreRecords', JSON.stringify(scoreRecords));
+        updateRanking();
+    }
+
+    // 渲染学生卡片
+    function renderGrid() {
+        const grid = document.getElementById('studentGrid');
+        grid.innerHTML = '';
+
+        students.forEach((student, index) => {
+            const card = document.createElement('div');
+            card.className = 'student-card';
+            let skillRatingHtml = '';
+            skills.forEach(skill => {
+                let starsHtml = '';
+                for (let i = 1; i <= 5; i++) {
+                    starsHtml += `<i class="fa-star ${i <= student.skills[skill] ? 'fas' : 'far'}" onclick="rateSkill(${index}, '${skill}', ${i})"></i>`;
+                }
+                skillRatingHtml += `<div class="skill-rating"><label>${skill}：</label><div class="stars">${starsHtml}</div></div>`;
+            });
+            card.innerHTML = `
+                    <button class="delete-btn" onclick="deleteStudent(${index})">×</button>
+                    <div class="avatar-container">
+                        <img src="${student.avatar || defaultAvatar}" class="avatar" id="avatar-${index}">
+                        <div class="change-avatar" onclick="changeAvatar(${index})">+</div>
+                        <input type="file" class="avatar-upload" id="avatar-upload-${index}" accept="image/*" onchange="handleAvatarUpload(${index}, this)">
+                    </div>
+                    <div class="student-name">${student.name}</div>
+                    <div class="score" id="score-${index}" onclick="editScore(${index})">${student.score}</div>
+                    <div class="controls">
+                        <button class="btn-control btn-minus" onclick="changeScore(${index}, -1)">-</button>
+                        <button class="btn-control btn-plus" onclick="changeScore(${index}, 1)">+</button>
+                    </div>
+                    ${skillRatingHtml}
+                `;
+            grid.appendChild(card);
+        });
+    }
+
+    // 分数调整函数（点击加减按钮）
+    function changeScore(index, delta) {
+        const student = students[index];
+        const oldScore = student.score;
+        student.score += delta;
+        saveScoreRecord(student.name, delta, oldScore, student.score);
+        saveData();
+
+        // 添加动画效果
+        const scoreElement = document.getElementById(`score-${index}`);
+        scoreElement.style.animation = 'pulse 0.3s';
+        setTimeout(() => scoreElement.style.animation = '', 300);
+
+        scoreElement.textContent = student.score;
+    }
+
+    // 点击积分直接输入
+    function editScore(index) {
+        const scoreElement = document.getElementById(`score-${index}`);
+        const currentScore = students[index].score;
+
+        // 创建输入框
+        const input = document.createElement('input');
+        input.className = 'score-input';
+        input.type = 'number';
+        input.value = currentScore;
+        input.min = 0; // 限制最低分0分，可根据需求调整
+        input.style.width = '100px';
+
+        // 替换元素
+        scoreElement.parentNode.replaceChild(input, scoreElement);
+
+        // 失去焦点时保存
+        input.addEventListener('blur', function () {
+            const newScore = parseInt(this.value) || 0;
+            const student = students[index];
+            const delta = newScore - student.score;
+            if (newScore >= 0) { // 确保分数为非负整数
+                student.score = newScore;
+                saveScoreRecord(student.name, delta, currentScore, newScore);
+                saveData();
+                renderScoreDisplay(index, newScore);
+            } else {
+                renderScoreDisplay(index, currentScore); // 输入无效时恢复原分数
+            }
+        });
+
+        // 回车时保存
+        input.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                const newScore = parseInt(this.value) || 0;
+                const student = students[index];
+                const delta = newScore - student.score;
+                if (newScore >= 0) {
+                    student.score = newScore;
+                    saveScoreRecord(student.name, delta, currentScore, newScore);
+                    saveData();
+                    renderScoreDisplay(index, newScore);
+                } else {
+                    renderScoreDisplay(index, currentScore);
+                }
+            }
+        });
+    }
+
+    // 渲染分数显示（辅助函数）
+    function renderScoreDisplay(index, score) {
+        const scoreElement = document.createElement('div');
+        scoreElement.className = 'score';
+        scoreElement.textContent = score;
+        scoreElement.onclick = () => editScore(index); // 重新绑定点击事件
+        document.getElementById(`studentGrid`).querySelector(`[id="score-${index}"]`).parentNode.replaceChild(scoreElement, document.getElementById(`studentGrid`).querySelector(`[id="score-${index}"]`));
+    }
+
+    // 全队调整分数
+    function adjustAll() {
+        const input = prompt('请输入调整分数（正数加分，负数扣分）:');
+        const delta = parseInt(input) || 0;
+
+        students.forEach(student => {
+            const oldScore = student.score;
+            student.score += delta;
+            saveScoreRecord(student.name, delta, oldScore, student.score);
+        });
+        saveData();
+        renderGrid();
+    }
+
+    // 全队清零
+    function clearAll() {
+        if (confirm('确定要清零所有积分吗？')) {
+            students.forEach(student => {
+                const oldScore = student.score;
+                const delta = -oldScore;
+                student.score = 0;
+                saveScoreRecord(student.name, delta, oldScore, 0);
+            });
+            saveData();
+            renderGrid();
+        }
+    }
+
+    // 更新排行榜
+    function updateRanking() {
+        const sorted = [...students].sort((a, b) => b.score - a.score);
+        const medals = ['🥇', '🥈', '🥉'];
+        const rankingList = document.getElementById('rankingList');
+        rankingList.innerHTML = '';
+
+        sorted.forEach((student, index) => {
+            const totalStars = Object.values(student.skills).reduce((sum, stars) => sum + stars, 0);
+            const averageStars = totalStars / skills.length;
+            let averageStarsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                averageStarsHtml += `<i class="fa-star ${i <= averageStars ? 'fas' : 'far'}"></i>`;
+            }
+            const rankItem = document.createElement('div');
+            rankItem.className = 'ranking-item';
+            rankItem.innerHTML = `
+                    <div class="rank">${index + 1}</div>
+                    <div class="medal">${index < 3 ? medals[index] : ''}</div>
+                    <img src="${student.avatar || defaultAvatar}" class="ranking-avatar">
+                    <div class="ranking-name">${student.name} ${averageStarsHtml}</div>
+                    <div class="ranking-score">${student.score}</div>
+                `;
+            rankingList.appendChild(rankItem);
+        });
+    }
+
+    // 导出数据
+    function exportData() {
+        const data = students.map(s => {
+            const skillsStr = skills.map(skill => s.skills[skill]).join(',');
+            return `${s.name},${s.score},${s.avatar || ''},${skillsStr}`;
+        }).join('\n');
+        const blob = new Blob([data], {type: 'text/plain'});
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '积分数据.txt';
+        a.click();
+    }
+
+    // 导入数据
+    document.getElementById('importFile').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function () {
+            const lines = reader.result.split('\n');
+            students = lines.filter(line => line.trim()).map(line => {
+                const parts = line.split(',');
+                const skillsObj = {};
+                skills.forEach((skill, i) => skillsObj[skill] = parseInt(parts[i + 3]) || 0);
+                return {
+                    name: parts[0],
+                    score: parseInt(parts[1]) || 0,
+                    avatar: parts[2] || defaultAvatar,
+                    skills: skillsObj
+                };
+            });
+
+            saveData();
+            renderGrid();
+        };
+
+        reader.readAsText(file);
+    });
+
+    // 添加学生
+    function addStudent() {
+        const name = prompt('请输入新学生姓名:');
+        if (name) {
+            const skillsObj = {};
+            skills.forEach(skill => skillsObj[skill] = 0);
+            students.unshift({
+                name,
+                score: 0,
+                avatar: defaultAvatar,
+                skills: skillsObj
+            });
+            saveData();
+            renderGrid();
+        }
+    }
+
+    // 删除学生
+    function deleteStudent(index) {
+        if (confirm('确定要删除该学生吗？')) {
+            students.splice(index, 1);
+            saveData();
+            renderGrid();
+        }
+    }
+
+    // 切换边栏显示/隐藏
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('collapsed');
+    }
+
+    // 触发头像上传
+    function changeAvatar(index) {
+        document.getElementById(`avatar-upload-${index}`).click();
+    }
+
+    // 处理头像上传
+    function handleAvatarUpload(index, input) {
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                students[index].avatar = e.target.result;
+                saveData();
+                document.getElementById(`avatar-${index}`).src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // 保存积分记录
+    function saveScoreRecord(name, delta, oldScore, newScore) {
+        const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const weekDay = days[now.getDay()];
+        const dateStr = `${year}-${month}-${day} ${weekDay}`;
+        const record = {
+            name,
+            delta,
+            oldScore,
+            newScore,
+            date: dateStr
+        };
+        scoreRecords.push(record);
+    }
+
+    // 显示积分记录
+    function showScoreRecords() {
+        const modal = document.getElementById('recordModal');
+        const recordList = document.getElementById('recordList');
+        recordList.innerHTML = '';
+
+        const groupedRecords = {};
+        scoreRecords.forEach(record => {
+            const key = `${record.date}-${record.name}`;
+            if (!groupedRecords[key]) {
+                groupedRecords[key] = {
+                    date: record.date,
+                    name: record.name,
+                    totalDelta: record.delta,
+                    finalScore: record.newScore
+                };
+            } else {
+                groupedRecords[key].totalDelta += record.delta;
+                groupedRecords[key].finalScore = record.newScore;
+            }
+        });
+
+        Object.values(groupedRecords).forEach(record => {
+            const li = document.createElement('li');
+            li.textContent = `${record.date} ${record.name} 积分变动 ${record.totalDelta > 0 ? '+' + record.totalDelta : record.totalDelta}，累计积分 ${record.finalScore}`;
+            recordList.appendChild(li);
+        });
+
+        modal.style.display = 'block';
+
+        const closeBtn = document.querySelector('.close');
+        closeBtn.onclick = function () {
+            modal.style.display = 'none';
+        };
+
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        };
+    }
+
+    // 技术评价函数
+    function rateSkill(index, skill, rating) {
+        students[index].skills[skill] = rating;
+        saveData();
+        renderGrid();
+    }
+
+    // 初始化加载
+    document.addEventListener('DOMContentLoaded', loadData);
+</script>
+
+</body>
+
+</html>    
